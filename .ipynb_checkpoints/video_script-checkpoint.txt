@@ -1,0 +1,92 @@
+DL PR2 - Video Explanation Script (5-10 minutes)
+
+Hi, in this video I am going to walk you through my Deep Learning PR2 project. The goal of this
+project is to predict whether a person's income is above or below 50 thousand dollars a year,
+using the Adult Income dataset, also called the Census Income dataset. This is a binary
+classification problem, so I built an ANN, an artificial neural network, to solve it.
+
+DATASET AND CLEANING
+The dataset has around 48 thousand rows, with features like age, workclass, education, occupation,
+hours worked per week, and so on. First I cleaned the data. The text columns had extra spaces in
+them, so I stripped those. Then I replaced the question mark values with actual missing values and
+dropped those rows, since the missing values were only in a few categorical columns like
+workclass, occupation, and native country, and I did not want to distort the data by filling them
+in with the most common category. I also dropped fnlwgt, since it is just a census sampling
+weight and has nothing to do with income, and I dropped the education column since education dot
+num already has the same information as a number.
+
+ONE HOT ENCODING AND SCALING
+After cleaning, I one hot encoded the categorical columns, so things like workclass and occupation
+became separate 0 and 1 columns. Then I scaled the numeric columns like age and hours per week
+using StandardScaler, but I did not scale the one hot encoded columns since they are already 0 or
+1. I also used stratify when splitting into train and test sets, so both sets keep the same class
+balance.
+
+CLASS IMBALANCE
+One important thing about this dataset is that it is imbalanced. About 75 percent of people earn
+less than or equal to 50 thousand, and only about 25 percent earn more. Because of this, I did not
+just look at accuracy, I also tracked precision, recall, and F1 score for the minority class, which
+is the people earning more than 50K.
+
+BASELINE MODEL AND SIGMOID
+For the baseline model, I built a simple ANN with two hidden layers, 128 neurons and 64 neurons,
+using ReLU activation, and a single sigmoid neuron at the output. I used sigmoid instead of softmax
+because we only have two classes, so one neuron that outputs a probability between 0 and 1 is
+enough. The baseline model got an accuracy of about 84 percent and a class 1 F1 score of about
+0.64.
+
+ACTIVATION FUNCTIONS
+Next I compared four activation functions for the hidden layers: ReLU, Tanh, Sigmoid, and ELU. In
+my run, ELU actually gave the best class 1 F1 score, around 0.67, slightly better than the others.
+I also looked at something called dead neurons for the ReLU model, which are neurons that always
+output zero. In my run, I actually found zero dead neurons out of 128, which was a nice result. I
+also looked at vanishing gradients using the sigmoid model, and I could clearly see that the
+gradients got smaller and smaller as you go from the output layer back to the first layer, because
+sigmoid's derivative is at most 0.25, so every layer it passes through shrinks the gradient more.
+
+WEIGHT INITIALIZATION
+Then I looked at weight initialization. I compared Glorot uniform, Glorot normal, He uniform, He
+normal, and zero initialization. Zero initialization performed badly, staying close to the
+majority class baseline of about 75 percent accuracy, because when all the weights start at zero,
+every neuron learns the exact same thing, which is called the symmetry problem. He initialization
+is recommended for ReLU networks because it accounts for the fact that ReLU kills about half of
+its inputs. I also looked at the actual weight distributions before and after training for He
+Normal and Glorot Uniform, and you can see the weights spread out more after training as the
+network learns which features matter.
+
+LOSS FUNCTIONS
+For loss functions, I compared Binary Cross Entropy, Mean Squared Error, Weighted BCE, and Focal
+Loss. BCE is the standard for binary classification because it penalizes confident wrong
+predictions strongly. In my run, Weighted BCE gave the best class 1 F1 score, about 0.68, better
+than the plain baseline's 0.64. This makes sense because Weighted BCE gives more importance to the
+minority class during training, so the model tries harder not to miss those cases, which increased
+recall a lot, from about 0.58 to about 0.83. Focal loss, on the other hand, actually gave a lower
+F1 in my run, around 0.54, mainly because its recall dropped a lot.
+
+BATCH NORMALIZATION
+Then I added Batch Normalization, which normalizes the output of each dense layer before applying
+the activation function, using the batch's mean and variance during training and a moving average
+during prediction. In my run, the batch normalized model got the best ROC AUC score of the whole
+project, around 0.896. I also tested putting batch norm before versus after the activation
+function, and looked at the learned gamma and beta values, which control how much the network
+scales and shifts the normalized values.
+
+OPTIMIZERS
+For optimizers, I compared SGD, SGD with momentum, RMSprop, Adam, and an explicitly configured
+Adam, all using the strongest setup so far, meaning ReLU, He Normal, batch norm, and BCE loss. I
+also ran a learning rate sensitivity test, trying different learning rates for SGD and Adam, and
+you can really see in the plots how a learning rate that is too small makes training very slow, and
+one that is too large can make training unstable.
+
+FINAL MODEL AND RESULTS
+For my final combined model, I used ReLU, He Normal initialization, Batch Normalization, and Adam,
+trained for 80 epochs. This gave me an accuracy of about 84.4 percent, a class 1 F1 score of about
+0.656, and an ROC AUC of about 0.895. Looking at my full results table, if I compare all the
+techniques, Weighted BCE gave the single biggest improvement in class 1 F1 score compared to the
+baseline, since it directly targets the class imbalance problem, while batch normalization gave
+the best overall ROC AUC.
+
+CONCLUSION
+So overall, this project shows how different building blocks of a neural network, activation
+functions, initialization, loss functions, batch normalization, and optimizers, all affect how well
+the model learns, especially on an imbalanced dataset like this one. Thanks for watching.
